@@ -10,6 +10,7 @@ import { useTransactionStore } from "../stores/transactions";
 import type { Transaction, TransactionCategory } from "../types/transaction";
 
 const store = useTransactionStore();
+
 const router = useRouter();
 
 const categories: TransactionCategory[] = [

@@ -6,8 +6,8 @@ const route = useRoute();
 const menuItems = [
   { name: "Dashboard", icon: "▦", path: "/dashboard" },
   { name: "Transactions", icon: "↔", path: "/transactions" },
-  { name: "Reports", icon: "▥", path: "/reports" },
-  { name: "Settings", icon: "⚙", path: "/settings" },
+  // { name: "Reports", icon: "▥", path: "/reports" },
+  // { name: "Settings", icon: "⚙", path: "/settings" },
 ];
 </script>
 
