@@ -1,12 +1,5 @@
 <script setup lang="ts">
-interface Transaction {
-  id: number;
-  title: string;
-  category: string;
-  date: string;
-  amount: number;
-  type: "income" | "expense";
-}
+import type { Transaction } from "../types/transaction";
 
 defineProps<{
   transactions: Transaction[];

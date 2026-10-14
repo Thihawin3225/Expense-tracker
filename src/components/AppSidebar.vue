@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { useRoute } from "vue-router";
 
-const activeMenu = ref("Dashboard");
+const route = useRoute();
 
 const menuItems = [
-  { name: "Dashboard", icon: "▦" },
-  { name: "Transactions", icon: "↔" },
-  { name: "Reports", icon: "▥" },
-  { name: "Settings", icon: "⚙" },
+  { name: "Dashboard", icon: "▦", path: "/dashboard" },
+  { name: "Transactions", icon: "↔", path: "/transactions" },
+  { name: "Reports", icon: "▥", path: "/reports" },
+  { name: "Settings", icon: "⚙", path: "/settings" },
 ];
 </script>
 
@@ -21,16 +21,16 @@ const menuItems = [
     <p class="menu-label">MENU</p>
 
     <nav class="sidebar-nav">
-      <button
+      <RouterLink
         v-for="item in menuItems"
-        :key="item.name"
+        :key="item.path"
+        :to="item.path"
         class="menu-item"
-        :class="{ active: activeMenu === item.name }"
-        @click="activeMenu = item.name"
+        :class="{ active: route.path === item.path }"
       >
         <span class="menu-icon">{{ item.icon }}</span>
         <span>{{ item.name }}</span>
-      </button>
+      </RouterLink>
     </nav>
 
     <div class="sidebar-bottom">

@@ -1,80 +1,96 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+
 import AppSidebar from "../components/AppSidebar.vue";
 import AppNavbar from "../components/AppNavbar.vue";
-import SummaryCard from "../components/SummaryCard.vue";
 import RecentTransactions from "../components/RecentTransactions.vue";
 
-interface Transaction {
-  id: number;
-  title: string;
-  category: string;
-  date: string;
-  amount: number;
-  type: "income" | "expense";
-}
+import { useTransactionStore } from "../stores/transactions";
+import type { Transaction, TransactionCategory } from "../types/transaction";
 
-const transactions: Transaction[] = [
-  {
-    id: 1,
-    title: "Monthly Salary",
-    category: "Salary",
-    date: "Oct 12, 2026",
-    amount: 3500,
-    type: "income",
-  },
-  {
-    id: 2,
-    title: "Grocery Shopping",
-    category: "Food",
-    date: "Oct 11, 2026",
-    amount: 85.5,
-    type: "expense",
-  },
-  {
-    id: 3,
-    title: "Internet Bill",
-    category: "Utilities",
-    date: "Oct 10, 2026",
-    amount: 35,
-    type: "expense",
-  },
-  {
-    id: 4,
-    title: "Freelance Project",
-    category: "Other Income",
-    date: "Oct 09, 2026",
-    amount: 450,
-    type: "income",
-  },
-  {
-    id: 5,
-    title: "Transportation",
-    category: "Transport",
-    date: "Oct 08, 2026",
-    amount: 25,
-    type: "expense",
-  },
+const store = useTransactionStore();
+const router = useRouter();
+
+const categories: TransactionCategory[] = [
+  "Salary",
+  "Food",
+  "Transport",
+  "Shopping",
+  "Bills",
+  "Health",
+  "Education",
+  "Entertainment",
+  "Other",
 ];
 
-const totalIncome = transactions
-  .filter((item) => item.type === "income")
-  .reduce((sum, item) => sum + item.amount, 0);
-
-const totalExpenses = transactions
-  .filter((item) => item.type === "expense")
-  .reduce((sum, item) => sum + item.amount, 0);
-
-const totalBalance = totalIncome - totalExpenses;
-
-const savingsRate =
-  totalIncome > 0 ? ((totalBalance / totalIncome) * 100).toFixed(1) : "0.0";
-
 function formatCurrency(amount: number): string {
-  return amount.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
+  return `MMK ${Math.abs(amount).toLocaleString("en-US", {
+    maximumFractionDigits: 2,
+  })}`;
 }
+
+const recentTransactions = computed(() =>
+  [...store.transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5),
+);
+
+const usedCategories = computed(
+  () => new Set(store.transactions.map((item) => item.category)).size,
+);
+
+const expenseByCategory = computed(() => {
+  const totals = new Map<string, number>();
+
+  store.transactions
+    .filter((item) => item.type === "expense")
+    .forEach((item) => {
+      totals.set(item.category, (totals.get(item.category) ?? 0) + item.amount);
+    });
+
+  return [...totals.entries()]
+    .map(([category, amount]) => ({
+      category,
+      amount,
+      percentage:
+        store.totalExpenses > 0 ? (amount / store.totalExpenses) * 100 : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+});
+
+const incomeByCategory = computed(() => {
+  const totals = new Map<string, number>();
+
+  store.transactions
+    .filter((item) => item.type === "income")
+    .forEach((item) => {
+      totals.set(item.category, (totals.get(item.category) ?? 0) + item.amount);
+    });
+
+  return [...totals.entries()]
+    .map(([category, amount]) => ({
+      category,
+      amount,
+      percentage:
+        store.totalIncome > 0 ? (amount / store.totalIncome) * 100 : 0,
+    }))
+    .sort((a, b) => b.amount - a.amount);
+});
+
+const topExpense = computed(() => expenseByCategory.value[0]);
+
+function goToTransactions() {
+  router.push("/transactions");
+}
+
+function goToReports() {
+  router.push("/reports");
+}
+
+// Keep the shared Transaction type available for this view's data.
+const _transactionTypeCheck = (item: Transaction) => item.id;
+void _transactionTypeCheck;
 </script>
 
 <template>
@@ -84,93 +100,181 @@ function formatCurrency(amount: number): string {
     <main class="main-content">
       <AppNavbar />
 
-      <div class="dashboard-content">
-        <div class="welcome-section">
+      <div class="dashboard-content new-dashboard">
+        <!-- Header -->
+        <header class="dashboard-page-header">
           <div>
-            <h2>Financial Overview</h2>
-            <p>Track your money and manage your expenses.</p>
+            <h1>Dashboard</h1>
+            <p>{{ store.transactions.length }} transactions tracked</p>
           </div>
 
-          <button class="primary-btn">+ Add Transaction</button>
-        </div>
+          <button class="primary-btn" @click="goToTransactions">
+            <span class="add-symbol">＋</span>
+            Add transaction
+          </button>
+        </header>
 
-        <section class="summary-grid">
-          <SummaryCard
-            title="Total Balance"
-            :amount="formatCurrency(totalBalance)"
-            icon="$"
-            color="#dbeafe"
-            change="Your current net balance"
-          />
+        <!-- Summary cards -->
+        <section class="dashboard-stats">
+          <article class="dashboard-stat-card">
+            <div class="stat-icon stat-icon-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="6" width="18" height="14" rx="2" />
+                <path d="M3 9h18M16 14h2" />
+                <path d="M6 6V4h13" />
+              </svg>
+            </div>
 
-          <SummaryCard
-            title="Total Income"
-            :amount="formatCurrency(totalIncome)"
-            icon="↙"
-            color="#dcfce7"
-            change="All recorded income"
-          />
+            <div class="stat-details">
+              <span class="stat-label">BALANCE</span>
+              <strong>{{ formatCurrency(store.totalBalance) }}</strong>
+              <p>Income minus expenses</p>
+            </div>
+          </article>
 
-          <SummaryCard
-            title="Total Expenses"
-            :amount="formatCurrency(totalExpenses)"
-            icon="↗"
-            color="#fee2e2"
-            change="All recorded expenses"
-          />
+          <article class="dashboard-stat-card">
+            <div class="stat-icon stat-icon-green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="m3 17 6-6 4 4 8-9" />
+                <path d="M15 6h6v6" />
+              </svg>
+            </div>
 
-          <SummaryCard
-            title="Savings Rate"
-            :amount="`${savingsRate}%`"
-            icon="%"
-            color="#f3e8ff"
-            change="Balance ÷ income"
-          />
+            <div class="stat-details">
+              <span class="stat-label">TOTAL INCOME</span>
+              <strong>{{ formatCurrency(store.totalIncome) }}</strong>
+              <p>All recorded earnings</p>
+            </div>
+          </article>
+
+          <article class="dashboard-stat-card">
+            <div class="stat-icon stat-icon-red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="m3 7 6 6 4-4 8 9" />
+                <path d="M15 18h6v-6" />
+              </svg>
+            </div>
+
+            <div class="stat-details">
+              <span class="stat-label">TOTAL EXPENSE</span>
+              <strong>{{ formatCurrency(store.totalExpenses) }}</strong>
+              <p>All recorded spending</p>
+            </div>
+          </article>
+
+          <article class="dashboard-stat-card">
+            <div class="stat-icon stat-icon-orange">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2v10h10A10 10 0 1 1 12 2Z" />
+                <path d="M16 2.7A10 10 0 0 1 21.3 8H16Z" />
+              </svg>
+            </div>
+
+            <div class="stat-details">
+              <span class="stat-label">CATEGORIES USED</span>
+              <strong>{{ usedCategories }} of {{ categories.length }}</strong>
+              <p>
+                Top spend:
+                {{
+                  formatCurrency(topExpense?.amount ?? 0).replace("MMK ", "")
+                }}
+              </p>
+            </div>
+          </article>
         </section>
 
-        <section class="overview-grid">
-          <div class="chart-placeholder">
-            <div class="section-heading">
+        <!-- Category summaries -->
+        <section class="category-overview">
+          <!-- Expense by category -->
+          <article class="category-panel">
+            <header class="category-panel-header">
               <div>
-                <h2>Expense Overview</h2>
-                <p>Your spending at a glance</p>
+                <h2>Expense by category</h2>
+                <p>{{ formatCurrency(store.totalExpenses) }} spent in total</p>
               </div>
-              <span class="period-label">This month</span>
+
+              <span class="category-count expense-count">
+                ◷ {{ expenseByCategory.length }} categories
+              </span>
+            </header>
+
+            <div v-if="expenseByCategory.length" class="category-list">
+              <div
+                v-for="item in expenseByCategory"
+                :key="item.category"
+                class="category-row"
+              >
+                <div class="category-row-info">
+                  <span>{{ item.category }}</span>
+                  <strong>{{ formatCurrency(item.amount) }}</strong>
+                  <small>{{ Math.round(item.percentage) }}%</small>
+                </div>
+
+                <div class="category-progress expense-progress">
+                  <div
+                    class="category-progress-fill"
+                    :style="{ width: `${item.percentage}%` }"
+                  ></div>
+                </div>
+              </div>
             </div>
 
-            <div class="chart-message">
-              <span class="chart-symbol">▥</span>
-              <strong>Expense analytics</strong>
-              <p>We'll add interactive charts in Lesson 5.</p>
+            <div v-else class="category-empty">
+              No expense transactions yet.
             </div>
-          </div>
+          </article>
 
-          <div class="budget-card">
-            <h2>Quick Summary</h2>
-            <p>Income minus expenses</p>
+          <!-- Income by category -->
+          <article class="category-panel">
+            <header class="category-panel-header">
+              <div>
+                <h2>Income by category</h2>
+                <p>{{ formatCurrency(store.totalIncome) }} earned in total</p>
+              </div>
 
-            <div class="budget-row">
-              <span>Total Income</span>
-              <strong class="income">{{ formatCurrency(totalIncome) }}</strong>
+              <span class="category-count income-count">
+                ↗ {{ incomeByCategory.length }} categories
+              </span>
+            </header>
+
+            <div v-if="incomeByCategory.length" class="category-list">
+              <div
+                v-for="item in incomeByCategory"
+                :key="item.category"
+                class="category-row"
+              >
+                <div class="category-row-info">
+                  <span>{{ item.category }}</span>
+                  <strong>{{ formatCurrency(item.amount) }}</strong>
+                  <small>{{ Math.round(item.percentage) }}%</small>
+                </div>
+
+                <div class="category-progress income-progress">
+                  <div
+                    class="category-progress-fill"
+                    :style="{ width: `${item.percentage}%` }"
+                  ></div>
+                </div>
+              </div>
             </div>
 
-            <div class="budget-row">
-              <span>Total Expenses</span>
-              <strong class="expense">{{
-                formatCurrency(totalExpenses)
-              }}</strong>
-            </div>
-
-            <div class="budget-divider"></div>
-
-            <div class="budget-row balance-row">
-              <span>Remaining</span>
-              <strong>{{ formatCurrency(totalBalance) }}</strong>
-            </div>
-          </div>
+            <div v-else class="category-empty">No income transactions yet.</div>
+          </article>
         </section>
 
-        <RecentTransactions :transactions="transactions" />
+        <!-- Recent transactions -->
+        <section class="recent-transactions-panel">
+          <header class="recent-panel-header">
+            <div>
+              <h2>Recent transactions</h2>
+              <p>Last {{ recentTransactions.length }} entries</p>
+            </div>
+
+            <button class="view-all-link" @click="goToTransactions">All</button>
+          </header>
+
+          <RecentTransactions :transactions="recentTransactions" />
+        </section>
       </div>
     </main>
   </div>
