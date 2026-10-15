@@ -26,7 +26,7 @@ const sampleTransactions: Transaction[] = [
     title: "Internet Bill",
     amount: 35,
     type: "expense",
-    category: "Bills",
+    category: "Bills & Fees",
     date: "2026-10-10",
   },
   {
@@ -34,7 +34,7 @@ const sampleTransactions: Transaction[] = [
     title: "Freelance Project",
     amount: 450,
     type: "income",
-    category: "Other",
+    category: "Other Expense",
     date: "2026-10-09",
   },
 ];

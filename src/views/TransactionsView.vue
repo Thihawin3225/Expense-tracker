@@ -235,7 +235,7 @@ function nextPage() {
     <AppSidebar />
 
     <main class="main-content">
-      <AppNavbar />
+      <AppNavbar title="Transaction" />
 
       <div class="dashboard-content transactions-page">
         <!-- 1. Page header -->
@@ -291,23 +291,25 @@ function nextPage() {
               </select>
             </label>
 
-            <label class="filter-field">
-              <span>From</span>
-              <input
-                v-model="fromDate"
-                type="date"
-                :max="toDate || undefined"
-              />
-            </label>
+            <div class="aaa">
+              <label class="filter-field">
+                <span>From</span>
+                <input
+                  v-model="fromDate"
+                  type="date"
+                  :max="toDate || undefined"
+                />
+              </label>
 
-            <label class="filter-field">
-              <span>To</span>
-              <input
-                v-model="toDate"
-                type="date"
-                :min="fromDate || undefined"
-              />
-            </label>
+              <label class="filter-field">
+                <span>To</span>
+                <input
+                  v-model="toDate"
+                  type="date"
+                  :min="fromDate || undefined"
+                />
+              </label>
+            </div>
           </div>
 
           <div class="filter-summary">
@@ -340,6 +342,7 @@ function nextPage() {
               type="checkbox"
               :checked="allPageSelected"
               :indeterminate="somePageSelected"
+              :disabled="paginatedTransactions.length === 0"
               @change="toggleSelectAll"
             />
             <span>Select page ({{ paginatedTransactions.length }})</span>
@@ -408,7 +411,7 @@ function nextPage() {
                         aria-label="Edit transaction"
                         @click="openEditForm(item)"
                       >
-                        ✎
+                        <i class="fa-solid fa-pen-to-square"></i>
                       </button>
 
                       <button
@@ -417,7 +420,19 @@ function nextPage() {
                         aria-label="Delete transaction"
                         @click="deleteTarget = item"
                       >
-                        ♜
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          xmlns:xlink="http://www.w3.org/1999/xlink"
+                          viewBox="0 0 32 32"
+                        >
+                          <path d="M12 12h2v12h-2z" fill="currentColor"></path>
+                          <path d="M18 12h2v12h-2z" fill="currentColor"></path>
+                          <path
+                            d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z"
+                            fill="currentColor"
+                          ></path>
+                          <path d="M12 2h8v2h-8z" fill="currentColor"></path>
+                        </svg>
                       </button>
                     </div>
                   </td>

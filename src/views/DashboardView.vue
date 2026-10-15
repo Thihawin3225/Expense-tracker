@@ -5,25 +5,45 @@ import { useRouter } from "vue-router";
 import AppSidebar from "../components/AppSidebar.vue";
 import AppNavbar from "../components/AppNavbar.vue";
 import RecentTransactions from "../components/RecentTransactions.vue";
+import type { ExpenseCategory } from "../types/transaction";
 
 import { useTransactionStore } from "../stores/transactions";
-import type { Transaction, TransactionCategory } from "../types/transaction";
+import type {
+  TransactionCategory,
+  TransactionType,
+} from "../types/transaction";
 
 const store = useTransactionStore();
-
 const router = useRouter();
 
-const categories: TransactionCategory[] = [
+// Income categories
+const incomeCategories: TransactionCategory[] = [
   "Salary",
+  "Gift",
+  "Freelance",
+  "Investment",
+];
+
+// Expense categories
+const expenseCategories: ExpenseCategory[] = [
   "Food",
   "Transport",
-  "Shopping",
-  "Bills",
   "Health",
-  "Education",
-  "Entertainment",
-  "Other",
+  "Shopping",
+  "Travel",
+  "Fitness",
+  "Bills & Fees",
+  "Other Expense",
 ];
+
+// All categories
+const allCategories = computed(() => [
+  ...new Set([...incomeCategories, ...expenseCategories]),
+]);
+
+function getCategoriesByType(type: TransactionType) {
+  return type === "income" ? incomeCategories : expenseCategories;
+}
 
 function formatCurrency(amount: number): string {
   return `MMK ${Math.abs(amount).toLocaleString("en-US", {
@@ -31,16 +51,19 @@ function formatCurrency(amount: number): string {
   })}`;
 }
 
+// Recent transactions
 const recentTransactions = computed(() =>
   [...store.transactions]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 5),
 );
 
+// Number of categories used in actual transactions
 const usedCategories = computed(
   () => new Set(store.transactions.map((item) => item.category)).size,
 );
 
+// Expense totals grouped by category
 const expenseByCategory = computed(() => {
   const totals = new Map<string, number>();
 
@@ -60,6 +83,7 @@ const expenseByCategory = computed(() => {
     .sort((a, b) => b.amount - a.amount);
 });
 
+// Income totals grouped by category
 const incomeByCategory = computed(() => {
   const totals = new Map<string, number>();
 
@@ -79,8 +103,10 @@ const incomeByCategory = computed(() => {
     .sort((a, b) => b.amount - a.amount);
 });
 
+// Highest expense category
 const topExpense = computed(() => expenseByCategory.value[0]);
 
+// Navigation
 function goToTransactions() {
   router.push("/transactions");
 }
@@ -88,10 +114,6 @@ function goToTransactions() {
 function goToReports() {
   router.push("/reports");
 }
-
-// Keep the shared Transaction type available for this view's data.
-const _transactionTypeCheck = (item: Transaction) => item.id;
-void _transactionTypeCheck;
 </script>
 
 <template>
@@ -99,10 +121,10 @@ void _transactionTypeCheck;
     <AppSidebar />
 
     <main class="main-content">
-      <AppNavbar />
+      <AppNavbar title="Dashboard" />
 
       <div class="dashboard-content new-dashboard">
-        <!-- Header -->
+        <!-- Dashboard header -->
         <header class="dashboard-page-header">
           <div>
             <h1>Dashboard</h1>
@@ -117,6 +139,7 @@ void _transactionTypeCheck;
 
         <!-- Summary cards -->
         <section class="dashboard-stats">
+          <!-- Balance -->
           <article class="dashboard-stat-card">
             <div class="stat-icon stat-icon-purple">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -133,6 +156,7 @@ void _transactionTypeCheck;
             </div>
           </article>
 
+          <!-- Income -->
           <article class="dashboard-stat-card">
             <div class="stat-icon stat-icon-green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -148,6 +172,7 @@ void _transactionTypeCheck;
             </div>
           </article>
 
+          <!-- Expenses -->
           <article class="dashboard-stat-card">
             <div class="stat-icon stat-icon-red">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -163,6 +188,7 @@ void _transactionTypeCheck;
             </div>
           </article>
 
+          <!-- Categories -->
           <article class="dashboard-stat-card">
             <div class="stat-icon stat-icon-orange">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -173,18 +199,21 @@ void _transactionTypeCheck;
 
             <div class="stat-details">
               <span class="stat-label">CATEGORIES USED</span>
-              <strong>{{ usedCategories }} of {{ categories.length }}</strong>
+              <strong>
+                {{ usedCategories }} of {{ allCategories.length }}
+              </strong>
               <p>
                 Top spend:
                 {{
                   formatCurrency(topExpense?.amount ?? 0).replace("MMK ", "")
                 }}
+                MMK
               </p>
             </div>
           </article>
         </section>
 
-        <!-- Category summaries -->
+        <!-- Category overview -->
         <section class="category-overview">
           <!-- Expense by category -->
           <article class="category-panel">
