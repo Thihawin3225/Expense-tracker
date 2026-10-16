@@ -46,9 +46,12 @@ function getCategoriesByType(type: TransactionType) {
 }
 
 function formatCurrency(amount: number): string {
-  return `MMK ${Math.abs(amount).toLocaleString("en-US", {
-    maximumFractionDigits: 2,
-  })}`;
+  return `${amount < 0 ? "-" : ""}MMK ${Math.abs(amount).toLocaleString(
+    "en-US",
+    {
+      maximumFractionDigits: 2,
+    },
+  )}`;
 }
 
 // Recent transactions
@@ -125,15 +128,25 @@ function goToReports() {
 
       <div class="dashboard-content new-dashboard">
         <!-- Dashboard header -->
-        <header class="dashboard-page-header">
+        <!-- <header class="dashboard-page-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>{{ store.transactions.length }} transactions tracked</p>
+          </div>
+
+          <button class="primary-btn smallsize" @click="goToTransactions">
+            <span class="add-symbol">＋</span>
+            Add transaction
+          </button>
+        </header> -->
+        <header class="transactions-header">
           <div>
             <h1>Dashboard</h1>
             <p>{{ store.transactions.length }} transactions tracked</p>
           </div>
 
           <button class="primary-btn" @click="goToTransactions">
-            <span class="add-symbol">＋</span>
-            Add transaction
+            <span>＋</span> Add transaction
           </button>
         </header>
 

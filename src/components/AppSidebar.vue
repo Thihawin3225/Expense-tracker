@@ -21,16 +21,16 @@ const menuItems: MenuItem[] = [
     icon: "fa-solid fa-money-bill-transfer",
     path: "/transactions",
   },
-  {
-    name: "Reports",
-    icon: "fa-solid fa-chart-pie",
-    path: "/reports",
-  },
-  {
-    name: "Settings",
-    icon: "fa-solid fa-gear",
-    path: "/settings",
-  },
+  // {
+  //   name: "Reports",
+  //   icon: "fa-solid fa-chart-pie",
+  //   path: "/reports",
+  // },
+  // {
+  //   name: "Settings",
+  //   icon: "fa-solid fa-gear",
+  //   path: "/settings",
+  // },
 ];
 </script>
 

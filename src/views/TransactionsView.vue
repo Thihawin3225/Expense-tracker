@@ -329,7 +329,18 @@ function nextPage() {
               >Balance <strong>{{ formatCurrency(balance) }}</strong></span
             >
 
-            <button class="clear-filters-btn" @click="clearFilters">
+            <button
+              v-if="
+                searchText ||
+                typeFilter !== 'all' ||
+                categoryFilter !== 'all' ||
+                fromDate ||
+                toDate
+              "
+              class="clear-filters-btn"
+              @click="clearFilters"
+            >
+              <i class="fa-solid fa-broom"></i>
               Clear filters
             </button>
           </div>

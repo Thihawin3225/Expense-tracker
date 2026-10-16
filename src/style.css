@@ -798,12 +798,23 @@ button {
   justify-content: space-between;
   gap: 16px;
 }
+.dashboard-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 
 .transactions-header h1 {
   margin: 0;
   color: #111827;
   font-size: 18px;
   font-weight: 700;
+}
+.dashboard-page-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
 }
 
 .transactions-header p {
@@ -812,6 +823,13 @@ button {
 }
 
 .transactions-header .primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.dashboard-page-header .primary-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1283,7 +1301,7 @@ button {
 
 .dashboard-page-header h1 {
   margin: 0;
-  font-size: 25px;
+  font-size: 19px;
   color: #0f172a;
 }
 
